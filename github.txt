@@ -11,3 +11,8 @@ $ git add .
 $ git remote add origin https://github.com/Johnny0217/crypto.git
 $ git commit -m "message"
 $ git push -u origin master
+
+# when something update
+$ git add .
+$ git commit -m "message"
+$ git push -u origin master
