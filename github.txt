@@ -1,0 +1,13 @@
+# specify Git info
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+
+Github create repo
+# Local PC ---> Git Bash ---> cd Project
+ssh: git@github.com:Johnny0217/crypto.git
+https://github.com/Johnny0217/crypto.git
+$ git init
+$ git add .
+$ git remote add origin https://github.com/Johnny0217/crypto.git
+$ git commit -m "message"
+$ git push -u origin master
