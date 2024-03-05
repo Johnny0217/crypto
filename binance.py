@@ -1,10 +1,16 @@
+# -*- coding: utf-8 -*-
+'''
+@Time : 2024/3/5 13:59
+@Author : Jun
+'''
+
 import pandas as pd
 import numpy as np
 from binance.spot import Spot
 import configparser
 import requests
 import json
-
+from utils import mk_data_path_from_vary_source
 
 '''
 API Doc
@@ -12,15 +18,16 @@ https://github.com/binance/binance-spot-api-docs/blob/master/rest-api_CN.md
 '''
 
 if __name__ == '__main__':
+    save_path = save_path = mk_data_path_from_vary_source('binance')
     # Restful API
-    base_url = 'https://api.binance.com'    # json response / unix / ms
+    base_url = 'https://api.binance.com'  # json response / unix / ms
     response = requests.get('https://data-api.binance.vision/api/v3/exchangeInfo?symbol=BTCUSDT')
     if response.status_code == 200:
         data = response.json()  # Python dict
     else:
         print(f"Request Failed, Satus code: {response.status_code}")
     data_json = json.loads(response.text)
-
+    print('DEBUG POINT HERE')
 
     # Function API
     # config = configparser.ConfigParser()

@@ -17,7 +17,8 @@ import datetime as dt
 import pandas as pd
 from multiprocessing import Pool
 import os
-from sym import lst_api_syms, lst_fapi_syms, lst_all_syms
+
+# from sym import lst_api_syms, lst_fapi_syms, lst_all_syms
 
 pd.set_option('expand_frame_repr', False)
 
@@ -130,12 +131,13 @@ def download_marketdata_from_binanceAPI(symbol, start_, end_, interval, root_pat
     return
 
 
-symbol_lst = ['ADAUSDT', 'BCHUSDT', 'BNBUSDT', 'BTCUSDT', 'DASHUSDT',
-              'EOSUSDT', 'ETCUSDT', 'ETHUSDT', 'LINKUSDT', 'LTCUSDT',
-              'NEOUSDT', 'TRXUSDT', 'XLMUSDT', 'XMRUSDT', 'XRPUSDT',
-              'XTZUSDT', 'ZECUSDT']
+# symbol_lst = ['ADAUSDT', 'BCHUSDT', 'BNBUSDT', 'BTCUSDT', 'DASHUSDT',
+#               'EOSUSDT', 'ETCUSDT', 'ETHUSDT', 'LINKUSDT', 'LTCUSDT',
+#               'NEOUSDT', 'TRXUSDT', 'XLMUSDT', 'XMRUSDT', 'XRPUSDT',
+#               'XTZUSDT', 'ZECUSDT']
+symbol_lst = ['BTCUSDT']
 filters = []
-symbol_lst = [x for x in lst_api_syms if x not in filters]
+# symbol_lst = [x for x in lst_api_syms if x not in filters]
 
 if __name__ == "__main__":
 

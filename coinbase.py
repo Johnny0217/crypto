@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
+'''
+@Time : 2024/3/5 13:59
+@Author : Jun
+'''
 import http.client
 import json
 from urllib.parse import urlunparse
 import urllib.parse
 import requests
 import pandas as pd
+import os
+from utils import mk_data_path_from_vary_source
 
 '''
 start
@@ -21,7 +28,6 @@ def get_all_known_trading_pairs_coinbase():
     scheme = "https"
     netloc = "api.exchange.coinbase.com"
     path = "/products"
-    # url = urlunparse((scheme, netloc, path, '', urllib.parse.urlencode(query_params), ''))
     url = urlunparse((scheme, netloc, path, '', '', ''))
     response = requests.get(url)
     if response.status_code == 200:
@@ -34,5 +40,7 @@ def get_all_known_trading_pairs_coinbase():
 
 
 if __name__ == '__main__':
+    # save_path exists under current project
+    save_path = mk_data_path_from_vary_source('coinbase')
     trading_pairs = get_all_known_trading_pairs_coinbase()
     print('DEBUG POINT HERE')
