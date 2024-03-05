@@ -10,7 +10,7 @@ import urllib.parse
 import requests
 import pandas as pd
 import os
-from utils import mk_data_path_from_vary_source
+from utils import mk_data_path_from_vary_source, log_info
 
 '''
 start

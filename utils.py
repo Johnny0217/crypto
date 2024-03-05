@@ -26,3 +26,8 @@ def mk_data_path_from_vary_source(source):
     save_path = os.path.join(project_path, save_file, source)
     check_path(save_path)
     return save_path
+
+
+def log_info():
+    now = datetime.now()
+    return now.strftime("%Y-%m-%d %H:%M:%S")
