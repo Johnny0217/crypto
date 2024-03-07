@@ -4,13 +4,16 @@
 @Author : Jun
 '''
 import http.client
-import json
-from urllib.parse import urlunparse
-import urllib.parse
 import requests
 import pandas as pd
 import os
-from utils import mk_data_path_from_vary_source, log_info
+import numpy as np
+import requests
+import json
+from utils import *
+from urllib.parse import urlunparse, urlencode
+import datetime
+from datetime import datetime, timedelta
 
 '''
 start
@@ -41,6 +44,21 @@ def get_all_known_trading_pairs_coinbase():
 
 if __name__ == '__main__':
     # save_path exists under current project
-    save_path = mk_data_path_from_vary_source('coinbase')
-    trading_pairs = get_all_known_trading_pairs_coinbase()
+    # save_path = mk_data_path_from_vary_source('coinbase')
+    # trading_pairs = get_all_known_trading_pairs_coinbase()
+    print('DEBUG POINT HERE')
+    symbol = 'BTC-USDT'
+    start_bj = '2024-01-01 08:00:00'
+    end_bj = '2024-03-07 08:00:00'
+    start = int(beijing_datetime_to_unix(start_bj) / 1000)
+    end = int(beijing_datetime_to_unix(end_bj) / 1000)
+    url = f'https://api.exchange.coinbase.com/products/{symbol}/candles/?start={start}&end={end}&granularity=86400'
+    response = requests.get(url)
+    data = response.json()
+    data = pd.DataFrame(data)
+    data.columns = ['unix_s', 'low', 'high', 'open', 'close', 'volume']
+    data['UTC_datetime'] = data['unix_s'].apply(lambda x: datetime.utcfromtimestamp(x))
+    data['Beijing_datetime'] = data['UTC_datetime'].apply(lambda x: x + timedelta(hours=8))
+    print(f'{start_bj[:10]}_{end_bj[:10]} saved')
+    data.to_csv(f'{symbol}_{start_bj[:10]}_{end_bj[:10]}.csv')
     print('DEBUG POINT HERE')

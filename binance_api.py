@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
 '''
-@Time : 2024/3/5 15:06
-@Author : Jun
-'''
-# -*- coding: utf-8 -*-
-'''
 @Time : 2024/3/5 13:59
 @Author : Jun
 '''
@@ -15,7 +10,7 @@ from binance.spot import Spot
 import configparser
 import requests
 import json
-from utils import mk_data_path_from_vary_source, log_info
+from utils import *
 from urllib.parse import urlunparse, urlencode
 import urllib.parse
 from datetime import datetime
@@ -69,45 +64,54 @@ def get_ob_depth(symbol: str, limit: int = 10):
         print(f"{log_info()} Request Failed, Satus code: {response.status_code}")
 
 
-def beijing_datetime_to_unix(date_time_str: str):
+def get_aggTrades(symbol: str, startTime: int = None, endTime: int = None, limit: int = 1000, fromId: int = None):
     '''
-    Beijing_datetime -> UTC timezone -> UNIX ms
+    :param symbol: BTCUSDT / ETHUSDT
+    :param startTime: unix ms
+    :param endTime: unix ms
+    :param limit: max 1000
+    :param fromId: not used
     '''
-    beijing_tz = pytz.timezone('Asia/Shanghai')
-    utc_tz = pytz.utc
-    date_time_obj_beijing = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
-    date_time_obj_utc = beijing_tz.localize(date_time_obj_beijing).astimezone(utc_tz)
-    timestamp_ms = int(date_time_obj_utc.timestamp() * 1000)
-    return timestamp_ms
-
-
-def get_aggTrades(symbol: str, startTime: int, endTime: int, limit: int = 500, fromId: int = None):
     scheme = "https"
     net_loc = 'api.binance.com'
     path = '/api/v3/aggTrades'
-    query_params = {'symbol': 'BTCUSDT', 'startTime': f'{startTime}', 'endTime': f'{endTime}', 'limit': f'{limit}'}
+    query_params = {'symbol': f'{symbol}', 'limit': f'{limit}'}
+    if startTime is not None:
+        query_params['startTime'] = f'{startTime}'
+        query_params['endTime'] = f'{endTime}'
     if fromId is not None:
         query_params['fromId'] = f'{fromId}'
     query = urlencode(query_params)
     url = urlunparse((scheme, net_loc, path, '', query, ''))
     response = requests.get(url)
     if response.status_code == 200:
-        data = response.json()  # Python dict
-        data = pd.DataFrame(data).sort_values(by=['a'])
-        return data
+        data = response.json()
+        if type(data) == list:
+            if len(data) == 0:
+                print('Request response is empty')
+                return
+            else:
+                data = pd.DataFrame(data)
+                data['datetime_utc'] = pd.to_datetime(data['T'], unit='ms')
+                bj_tz = pytz.timezone('Asia/Shanghai')
+                data['datetime_bj'] = data['datetime_utc'].dt.tz_localize('UTC').dt.tz_convert(bj_tz)
+                data = data.sort_values(by=['datetime_bj'])
+                return data
     else:
         print(f"{log_info()} Request Failed, Satus code: {response.status_code}")
 
 
 if __name__ == '__main__':
-    check_connection()
-    symbol_lst = ['BTCUSDT', 'ETHUSDT']
-    symbol = 'BTCUSDT'
-    ob_data = get_ob_depth('BTCUSDT', 100)
-    start = beijing_datetime_to_unix('2023-12-11 00:00:00')
-    end = beijing_datetime_to_unix('2023-12-12 00:00:00')
-
-    df = get_aggTrades('BTCUSDT', start, end)
-
-
-    save_path = mk_data_path_from_vary_source('binance')  # mkdir
+    # check_connection()
+    # ob_data = get_ob_depth('BTCUSDT', 100)
+    start = beijing_datetime_to_unix('2017-09-01 08:01:00')
+    end = beijing_datetime_to_unix('2017-09-01 08:02:00')
+    # start = beijing_datetime_to_unix('2023-12-11 00:01:00')
+    # end = beijing_datetime_to_unix('2023-12-11 00:02:00')
+    # save_path = mk_data_path_from_vary_source('binance')
+    # startTime - endTime
+    # df = get_aggTrades('BTCUSDT', start, end, limit=1000)
+    # fromId test
+    # df = get_aggTrades('BTCUSDT', limit=1000, fromId=61458)
+    print('DEBUG POOINT HERE')
+    # df.to_csv(f'{save_path}/1min_aggTrades.csv')

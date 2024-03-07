@@ -6,11 +6,24 @@ from scipy.stats import norm
 import numba
 import warnings
 import os
+import pytz
 
 warnings.filterwarnings('ignore')
 from numpy.lib import stride_tricks, pad
 from joblib import Parallel, delayed
 from tqdm import tqdm
+
+
+def beijing_datetime_to_unix(date_time_str: str):
+    '''
+    Beijing_datetime -> UTC timezone -> UNIX ms
+    '''
+    beijing_tz = pytz.timezone('Asia/Shanghai')
+    utc_tz = pytz.utc
+    date_time_obj_beijing = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
+    date_time_obj_utc = beijing_tz.localize(date_time_obj_beijing).astimezone(utc_tz)
+    timestamp_ms = int(date_time_obj_utc.timestamp() * 1000)
+    return timestamp_ms
 
 
 def check_path(path):
