@@ -66,6 +66,8 @@ def get_ob_depth(symbol: str, limit: int = 10):
 
 def get_aggTrades(symbol: str, startTime: int = None, endTime: int = None, limit: int = 1000, fromId: int = None):
     '''
+    get_aggTrades('BTCUSDT', limit=3, fromId=69180)
+    get_aggTrades('BTCUSDT', start, end, limit=1000)
     :param symbol: BTCUSDT / ETHUSDT
     :param startTime: unix ms
     :param endTime: unix ms
@@ -92,7 +94,7 @@ def get_aggTrades(symbol: str, startTime: int = None, endTime: int = None, limit
                 return
             else:
                 data = pd.DataFrame(data)
-                data['datetime_utc'] = pd.to_datetime(data['T'], unit='ms')
+                data['datetime_utc'] = pd.to_datetime(data['time'], unit='ms')
                 bj_tz = pytz.timezone('Asia/Shanghai')
                 data['datetime_bj'] = data['datetime_utc'].dt.tz_localize('UTC').dt.tz_convert(bj_tz)
                 data = data.sort_values(by=['datetime_bj'])
@@ -101,17 +103,70 @@ def get_aggTrades(symbol: str, startTime: int = None, endTime: int = None, limit
         print(f"{log_info()} Request Failed, Satus code: {response.status_code}")
 
 
+def get_klines(symbol, interval, start):
+    '''
+    get_klines('BTCUSDT', '1d', f'{beijing_datetime_to_unix('2017-08-17 08:00:00')}')
+    :param symbol:
+    :param interval:
+    :param start:
+    :return:
+    '''
+    kline_url = f'https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&startTime={start}'
+    response = requests.get(kline_url)
+    if response.status_code == 200:
+        data = response.json()
+        data = pd.DataFrame(data)
+        headers = ['open_unix', 'open', 'high', 'low', 'close', 'volume', 'close_unix', 'amount', 'num_trades',
+                   'taker_volume', 'taker_amount', 'ignore']
+        data.columns = headers
+        data['open_UTC'] = pd.to_datetime(data['open_unix'], unit='ms')
+        data['close_UTC'] = pd.to_datetime(data['close_unix'], unit='ms')
+        data = data.drop(columns=['ignore', 'open_unix', 'close_unix'])
+        return data
+    else:
+        print('Failed!')
+
+
+def get_historical_trades(symbol, id, limit=5):
+    historical_trades_url = f'https://api.binance.com/api/v3/historicalTrades?symbol={symbol}&fromId={id}&limit={limit}'
+    response = requests.get(historical_trades_url)
+    if response.status_code == 200:
+        data = response.json()
+        data = pd.DataFrame(data)
+        data['datetime_utc'] = pd.to_datetime(data['time'], unit='ms')
+        bj_tz = pytz.timezone('Asia/Shanghai')
+        data['datetime_bj'] = data['datetime_utc'].dt.tz_localize('UTC').dt.tz_convert(bj_tz)
+        data = data.sort_values(by=['datetime_bj'])
+        return data
+    else:
+        print('Failed!')
+
+
+def get_exchangeInfo(permissions, quoteAsset):
+    '''
+    :param permissions: SPOT / MARGIN / LEVERAGED
+    :return: current exchange trading rules and symbol information
+    '''
+    historical_trades_url = f'https://api.binance.com/api/v3/exchangeInfo?permissions={permissions}'
+    response = requests.get(historical_trades_url)
+    if response.status_code == 200:
+        data = response.json()
+        data = data['symbols']
+        data = pd.DataFrame(data)
+        data = data.loc[data[f'{quoteAsset}'], :]
+        return data
+        # data.to_csv('binance-spot-tradingpairs.csv')
+    else:
+        print('Connection Failed')
+
+
 if __name__ == '__main__':
-    # check_connection()
-    # ob_data = get_ob_depth('BTCUSDT', 100)
-    start = beijing_datetime_to_unix('2017-09-01 08:01:00')
-    end = beijing_datetime_to_unix('2017-09-01 08:02:00')
-    # start = beijing_datetime_to_unix('2023-12-11 00:01:00')
-    # end = beijing_datetime_to_unix('2023-12-11 00:02:00')
-    # save_path = mk_data_path_from_vary_source('binance')
-    # startTime - endTime
-    # df = get_aggTrades('BTCUSDT', start, end, limit=1000)
-    # fromId test
-    # df = get_aggTrades('BTCUSDT', limit=1000, fromId=61458)
-    print('DEBUG POOINT HERE')
-    # df.to_csv(f'{save_path}/1min_aggTrades.csv')
+    start = beijing_datetime_to_unix('2017-08-17 08:00:00')
+    end = beijing_datetime_to_unix('2017-09-17 08:00:00')
+
+    # get_klines('BTCUSDT', '1d', start)
+    # get_aggTrades('BTCUSDT', limit=3, fromId=69180)
+    # get_aggTrades('BTCUSDT', start, end, limit=1000)
+    # get_historical_trades('BTCUSDT', 69100, 100)
+
+    get_exchangeInfo('SPOT', 'USDT')

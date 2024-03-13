@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 def beijing_datetime_to_unix(date_time_str: str):
     '''
-    Beijing_datetime -> UTC timezone -> UNIX ms
+    Beijing_datetime  '2023-10-12 00:00:00' -> UTC timezone -> UNIX ms
     '''
     beijing_tz = pytz.timezone('Asia/Shanghai')
     utc_tz = pytz.utc

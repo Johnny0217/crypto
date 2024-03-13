@@ -44,8 +44,8 @@ def get_all_known_trading_pairs_coinbase():
 
 if __name__ == '__main__':
     # save_path exists under current project
-    # save_path = mk_data_path_from_vary_source('coinbase')
-    # trading_pairs = get_all_known_trading_pairs_coinbase()
+    save_path = mk_data_path_from_vary_source('coinbase')
+    trading_pairs = get_all_known_trading_pairs_coinbase()
     print('DEBUG POINT HERE')
     symbol = 'BTC-USDT'
     start_bj = '2024-01-01 08:00:00'
