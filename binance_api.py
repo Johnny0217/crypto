@@ -14,8 +14,10 @@ from utils import *
 from urllib.parse import urlunparse, urlencode
 import urllib.parse
 from datetime import datetime
+from tqdm import tqdm
 import time
 import pytz
+import matplotlib.pyplot as plt
 
 '''
 API Doc
@@ -94,7 +96,7 @@ def get_aggTrades(symbol: str, startTime: int = None, endTime: int = None, limit
                 return
             else:
                 data = pd.DataFrame(data)
-                data['datetime_utc'] = pd.to_datetime(data['time'], unit='ms')
+                data['datetime_utc'] = pd.to_datetime(data['T'], unit='ms')
                 bj_tz = pytz.timezone('Asia/Shanghai')
                 data['datetime_bj'] = data['datetime_utc'].dt.tz_localize('UTC').dt.tz_convert(bj_tz)
                 data = data.sort_values(by=['datetime_bj'])
@@ -155,9 +157,25 @@ def get_exchangeInfo(permissions, quoteAsset):
         data = pd.DataFrame(data)
         data = data.loc[data[f'{quoteAsset}'], :]
         return data
-        # data.to_csv('binance-spot-tradingpairs.csv')
     else:
         print('Connection Failed')
+
+
+def api_time_analysis():
+    api = pd.read_csv('symbol_api_start_time_utc.csv', index_col=0)
+    api.columns = ['utc_time']
+    api = api.sort_values(by=['utc_time'])
+    api['year'] = api['utc_time'].str.slice(0, 4)
+    yearly_count = api.groupby(['year']).count()
+    yearly_count['cumu'] = yearly_count['utc_time'].cumsum()
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.set_title('Binance USDT(quoteAsset) trading-pair numbers')
+    x = yearly_count.index.values
+    ax.bar(x, height=yearly_count['utc_time'], width=0.8, color='orange')
+    ax1 = ax.twinx()
+    ax1.plot(x, yearly_count['cumu'], label='cumulative numbers', color='g')
+    return
 
 
 if __name__ == '__main__':
@@ -165,8 +183,26 @@ if __name__ == '__main__':
     end = beijing_datetime_to_unix('2017-09-17 08:00:00')
 
     # get_klines('BTCUSDT', '1d', start)
+    get_klines('ADAUPUSDT', '3m', start)
     # get_aggTrades('BTCUSDT', limit=3, fromId=69180)
     # get_aggTrades('BTCUSDT', start, end, limit=1000)
     # get_historical_trades('BTCUSDT', 69100, 100)
 
-    get_exchangeInfo('SPOT', 'USDT')
+    # get_exchangeInfo('SPOT', 'USDT')
+    # trading_pairs = pd.read_csv('binance-spot-tradingpairs.csv', index_col=0)
+    # api_time_analysis()
+
+    # from binance.spot import Spot
+
+    # client = Spot()
+
+    # print(client.klines("BTCUSDT", '1m'))
+    # # timeZone = 0 ---> UTC
+    # data = client.klines(symbol='BTCUSDT', interval='1m', startTime=1499040000000, endTime=1599644799999, timeZone='0')
+    # client.klines(symbol='BTCUSDT', interval='1d')
+    # df = client.klines(symbol='AAVEUPUSDT', interval='1d')
+    # # print(client.klines("BNBUSDT", "1h", limit=10))
+    # print(client.lines("BNBUSDT", "1h", limit=10))
+
+
+    print('DEBUG POINT HERE')
